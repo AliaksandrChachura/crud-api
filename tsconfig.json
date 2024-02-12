@@ -1,0 +1,17 @@
+{
+ "compilerOptions": {
+   "target": "es2018",
+   "module": "ESNext",
+   "strict": true,
+   "esModuleInterop": true,
+   "skipLibCheck": true,
+   "forceConsistentCasingInFileNames": true,
+   "outDir": "./dist",
+   "baseUrl": "./src",
+   "paths": {
+     "*": ["*", "src/*"]
+   }
+ },
+ "include": ["src/*.ts"],
+ "exclude": ["node_modules", "dist"]
+}
