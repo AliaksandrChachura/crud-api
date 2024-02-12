@@ -25,8 +25,10 @@ const updateUser = (
 }
 
 const deleteUser = (id: string): boolean => {
-  if (!users[id]) return false
-  delete users[id]
+  const index = users.findIndex((user) => user.id === id)
+  if (index === -1) return false
+
+  users.splice(index, 1)
   return true
 }
 
@@ -40,7 +42,3 @@ export {
   deleteUser,
   isValidUuid,
 }
-export function getUsers() {
- throw new Error('Function not implemented.')
-}
-

@@ -1,11 +1,12 @@
 {
  "compilerOptions": {
    "target": "es2018",
-   "module": "ESNext",
+   "module": "NodeNext",
    "strict": true,
    "esModuleInterop": true,
    "skipLibCheck": true,
    "forceConsistentCasingInFileNames": true,
+   "moduleResolution": "nodenext",
    "outDir": "./dist",
    "baseUrl": "./src",
    "paths": {

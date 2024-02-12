@@ -2,15 +2,12 @@ import { IncomingMessage, ServerResponse } from 'http'
 import * as UserModel from '../models/userModels'
 import { parseJsonBody, sendJsonResponse } from '../utils/httpUtils'
 
-export const handleGetUsers = async (
-  req: IncomingMessage,
-  res: ServerResponse,
-) => {
-  const users = UserModel.getUsers()
+const handleGetUsers = async (req: IncomingMessage, res: ServerResponse) => {
+  const users = UserModel.getAllUsers()
   sendJsonResponse(res, 200, users)
 }
 
-export const handleGetUserById = async (
+const handleGetUserById = async (
   req: IncomingMessage,
   res: ServerResponse,
   userId: string,
@@ -27,10 +24,7 @@ export const handleGetUserById = async (
   sendJsonResponse(res, 200, user)
 }
 
-export const handleCreateUser = async (
-  req: IncomingMessage,
-  res: ServerResponse,
-) => {
+const handleCreateUser = async (req: IncomingMessage, res: ServerResponse) => {
   const userData = await parseJsonBody(req)
   if (
     !userData.username ||
@@ -42,9 +36,9 @@ export const handleCreateUser = async (
   }
   const newUser = UserModel.createUser(userData)
   sendJsonResponse(res, 201, newUser)
-};
+}
 
-export const handleUpdateUser = async (
+const handleUpdateUser = async (
   req: IncomingMessage,
   res: ServerResponse,
   userId: string,
@@ -62,7 +56,7 @@ export const handleUpdateUser = async (
   sendJsonResponse(res, 200, updatedUser)
 }
 
-export const handleDeleteUser = async (
+const handleDeleteUser = async (
   req: IncomingMessage,
   res: ServerResponse,
   userId: string,
@@ -77,4 +71,12 @@ export const handleDeleteUser = async (
     return
   }
   res.writeHead(204)
+}
+
+export {
+  handleGetUsers,
+  handleGetUserById,
+  handleCreateUser,
+  handleUpdateUser,
+  handleDeleteUser,
 }
