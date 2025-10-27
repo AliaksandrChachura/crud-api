@@ -1,0 +1,31 @@
+{
+  "name": "crud-api",
+  "version": "1.0.0",
+  "description": "simple crud api",
+  "homepage": "https://github.com/AliaksandrChachura/crud-api#readme",
+  "bugs": {
+    "url": "https://github.com/AliaksandrChachura/crud-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AliaksandrChachura/crud-api.git"
+  },
+  "license": "ISC",
+  "author": "Aliaksandr Chachura",
+  "type": "commonjs",
+  "main": "src/server.ts",
+  "scripts": {
+    "start:prod": "ts-node src/server.ts",
+    "start:dev": "nodemon ts-node src/server.ts",
+    "dev:clean": "lsof -ti :4000 | xargs kill -9 2>/dev/null; npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
