@@ -16,15 +16,17 @@
   "main": "src/server.ts",
   "scripts": {
     "start:prod": "ts-node src/server.ts",
-    "start:dev": "nodemon ts-node src/server.ts",
+    "start:dev": "nodemon src/server.ts",
     "dev:clean": "lsof -ti :4000 | xargs kill -9 2>/dev/null; npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "@types/uuid": "^10.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
