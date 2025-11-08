@@ -37,6 +37,7 @@ enum ErrorMessage {
     InvalidHobbies = 'Invalid hobbies type, array of strings expected',
     UserAlreadyExists = 'User already exists',
     InvalidJSON = 'Invalid JSON in request body',
+    EndpointNotFound = 'Endpoint not found',
 }
 
 export { HttpStatus, HttpMethod, ErrorMessage };

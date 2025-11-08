@@ -1,5 +1,12 @@
-import { UserWithoutId } from "./types";
+import { User } from "./types";
+import { readUsersFromFile } from "../utils/utils";
 
-const usersData: UserWithoutId[] = [];
+let usersData: User[] = [];
 
-export { usersData };
+export const initializeUsersData = async (): Promise<void> => {
+    usersData = await readUsersFromFile();
+}
+
+export const getUsersData = (): User[] => {
+    return usersData;
+}

@@ -1,8 +1,15 @@
 import { IncomingMessage, request, ServerResponse } from "http";
 import { getUsers, getUser, postUser, putUser, deleteUser } from "../controllers/controllers";
+import { handleError, isValidEndpoint } from "../utils/utils";
+import { HttpStatus, ErrorMessage } from "../types";
 
-const routes = (request: IncomingMessage, response: ServerResponse) => {
+const routes = async (request: IncomingMessage, response: ServerResponse) => {
     try {
+        if (!isValidEndpoint(request.url)) {
+            handleError(response, HttpStatus.NOT_FOUND, ErrorMessage.EndpointNotFound);
+            return;
+        }
+
         switch (request.method) {
             case 'GET':
                 const urlParts = request.url?.split('/').filter(part => part);
@@ -16,22 +23,19 @@ const routes = (request: IncomingMessage, response: ServerResponse) => {
                 break;
 
             case 'POST':
-                postUser(request, response);
+                await postUser(request, response);
                 break;
 
             case 'PUT':
-                putUser(request, response);
+                await putUser(request, response);
                 break;
 
             case 'DELETE':
-                deleteUser(request, response);
+                await deleteUser(request, response);
                 break;
 
             default:
-                response.statusCode = 400
-                response.write("No Response")
-                response.end()
-
+                handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidRequestBody);
         }
     } catch (error) {
         console.log(error)

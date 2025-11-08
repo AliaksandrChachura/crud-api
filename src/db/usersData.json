@@ -1,0 +1,22 @@
+[
+  {
+    "id": "2ffe3053-d2b8-4938-9c49-c0336b1aa4bc",
+    "username": "Alies",
+    "age": 40,
+    "hobbies": [
+      "running",
+      "jogging",
+      "maga"
+    ]
+  },
+  {
+    "id": "60924b85-6f5a-4c0d-8ac1-5a784add23ed",
+    "username": "Ali",
+    "age": 47,
+    "hobbies": [
+      "runnings",
+      "jogging",
+      "maga"
+    ]
+  }
+]
