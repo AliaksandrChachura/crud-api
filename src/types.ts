@@ -11,6 +11,7 @@ declare module 'http' {
 enum HttpStatus {
   OK = 200,
   CREATED = 201,
+  NO_CONTENT = 204,
   BAD_REQUEST = 400,
   UNAUTHORIZED = 401,
   NOT_FOUND = 404,
@@ -34,6 +35,8 @@ enum ErrorMessage {
     InvalidUsername = 'Invalid username type, string expected',
     InvalidAge = 'Invalid age type, number expected',
     InvalidHobbies = 'Invalid hobbies type, array of strings expected',
+    UserAlreadyExists = 'User already exists',
+    InvalidJSON = 'Invalid JSON in request body',
 }
 
 export { HttpStatus, HttpMethod, ErrorMessage };

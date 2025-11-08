@@ -1,20 +1,16 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { UserWithoutId, User } from "../db/types";
-import { request as httpRequest } from "http";
+import { User } from "../db/types";
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
-import { ErrorMessage } from '../types';
+import { ErrorMessage, HttpStatus } from '../types';
+import { getUserId, sendResponse, handleError, validateBody } from '../utils/utils';
 
 const getUsers = (request: IncomingMessage, response: ServerResponse) => {
     if (!request.users) {
-        response.statusCode = 500;
-        response.write('Internal server error');
-        response.end();
+        handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
         return;
     }
 
-    response.statusCode = 200;
-    response.write(JSON.stringify(request.users));
-    response.end();
+    sendResponse(response, HttpStatus.OK, request.users);
 }
 
 const getUser = (request: IncomingMessage, response: ServerResponse) => {
@@ -22,86 +18,70 @@ const getUser = (request: IncomingMessage, response: ServerResponse) => {
     const userId = urlParts && urlParts.length > 2 ? urlParts[2] : undefined;
 
     if (!request.users) {
-        response.statusCode = 500;
-        response.write('Internal server error');
-        response.end();
+        handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
         return;
     }
 
     if (!userId) {
-        response.statusCode = 400;
-        response.write(ErrorMessage.InvalidUserId);
-        response.end();
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidUserId);
         return;
     }
 
     if (!uuidValidate(userId)) {
-        response.statusCode = 400;
-        response.write(ErrorMessage.InvalidUserId);
-        response.end();
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidUserId);
         return;
     }
 
     const user = request.users.find((user: User) => user.id === userId);
     
     if (!user) {
-        response.statusCode = 404;
-        response.write(ErrorMessage.UserNotFound);
-        response.end();
+        handleError(response, HttpStatus.NOT_FOUND, ErrorMessage.UserNotFound);
         return;
     }
     
-    response.statusCode = 200;
-    response.write(JSON.stringify(user));
-    response.end();
+    sendResponse(response, HttpStatus.OK, user);
 }
 
 const postUser = (request: IncomingMessage, response: ServerResponse) => {
-    const userId = request.url?.split('/')[2];
-
-    const user = request.users?.find((user: User) => user.id === userId);
-    if (user) {
-        response.statusCode = 400;
-        response.write('user already exists');
-        response.end();
+    if (!request.users) {
+        handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
         return;
     }
-    if (!user) {
-        if (!request.body) {
-            response.statusCode = 400;
-            response.write('Invalid request body');
-            response.end();
-            return;
-        }
-        const newUser = {
-            id: uuidv4(),
-            username: request.body.username,
-            age: request.body.age,
-            hobbies: request.body.hobbies,
-        } as User;
-        request.users?.push(newUser);
-        response.statusCode = 400;
-        response.write('user not found');
-        response.end();
+
+    if (!request.body) {
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidRequestBody);
+        return;
     }
-    response.statusCode = 400;
-    response.write(`cannot pass ${request.url}`);
-    response.end();
+
+    if (!request.body.username || !request.body.age || !request.body.hobbies) {
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.MissingFields);
+        return;
+    }
+
+    if (!validateBody(request.body, response)) {
+        return;
+    }
+
+    const newUser = {
+        id: uuidv4(),
+        username: request.body.username,
+        age: request.body.age,
+        hobbies: request.body.hobbies,
+    } as User;
+    
+    request.users.push(newUser);
+    sendResponse(response, HttpStatus.CREATED, newUser);
 }
 
 const putUser = (request: IncomingMessage, response: ServerResponse) => {
     const userId = request.url?.split('/')[2];
     const user = request.users?.find((user: User) => user.id === userId);
     if (!user) {
-        response.statusCode = 404;
-        response.write('user not found');
-        response.end();
+        handleError(response, HttpStatus.NOT_FOUND, ErrorMessage.UserNotFound);
         return;
     }
     if (!request.body) {
-        response.statusCode = 400;
-        response.write('Invalid request body');
-        response.end();
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidRequestBody);
         return;
     }
     const updatedUser = {
@@ -111,23 +91,35 @@ const putUser = (request: IncomingMessage, response: ServerResponse) => {
         hobbies: request.body.hobbies,
     } as User;
     request.users?.splice(request.users.indexOf(user), 1, updatedUser);
-    response.statusCode = 200;
-    response.write(JSON.stringify(updatedUser));
-    response.end();
+    sendResponse(response, HttpStatus.OK, updatedUser);
 }
 
 const deleteUser = (request: IncomingMessage, response: ServerResponse) => {
-    const userId = request.url?.split('/')[2];
-    const user = request.users?.find((user: User) => user.id === userId);
-    if (!user) {
-        response.statusCode = 404;
-        response.write('user not found');
-        response.end();
+    const userId = getUserId(request);
+    
+    if (!request.users) {
+        handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
         return;
     }
-    request.users?.splice(request.users.indexOf(user), 1);
-    response.statusCode = 204;
-    response.end();
+
+    if (!userId) {
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidUserId);
+        return;
+    }
+
+    if (!uuidValidate(userId)) {
+        handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidUserId);
+        return;
+    }
+
+    const user = request.users.find((user: User) => user.id === userId);
+    if (!user) {
+        handleError(response, HttpStatus.NOT_FOUND, ErrorMessage.UserNotFound);
+        return;
+    }
+    
+    request.users.splice(request.users.indexOf(user), 1);
+    sendResponse(response, HttpStatus.NO_CONTENT, null);
 }
 
 export { getUsers, getUser, postUser, putUser, deleteUser};
