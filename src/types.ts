@@ -1,4 +1,3 @@
-import { IncomingMessage } from 'http';
 import { UserWithoutId, User } from './db/types';
 
 declare module 'http' {
@@ -26,18 +25,18 @@ enum HttpMethod {
 }
 
 enum ErrorMessage {
-    InternalServerError = 'Internal Server Error',
-    InvalidRequestUrl = 'Invalid request URL: No user ID provided',
-    InvalidRequestBody = 'Invalid request body',
-    InvalidUserId = 'Invalid user ID (Not a valid UUID)',
-    UserNotFound = 'User not found',
-    MissingFields = 'Request body must contain username, age, and hobbies',
-    InvalidUsername = 'Invalid username type, string expected',
-    InvalidAge = 'Invalid age type, number expected',
-    InvalidHobbies = 'Invalid hobbies type, array of strings expected',
-    UserAlreadyExists = 'User already exists',
-    InvalidJSON = 'Invalid JSON in request body',
-    EndpointNotFound = 'Endpoint not found',
+  InternalServerError = 'Internal Server Error',
+  InvalidRequestUrl = 'Invalid request URL: No user ID provided',
+  InvalidRequestBody = 'Invalid request body',
+  InvalidUserId = 'Invalid user ID (Not a valid UUID)',
+  UserNotFound = 'User not found',
+  MissingFields = 'Request body must contain username, age, and hobbies',
+  InvalidUsername = 'Invalid username type, string expected',
+  InvalidAge = 'Invalid age type, number expected',
+  InvalidHobbies = 'Invalid hobbies type, array of strings expected',
+  UserAlreadyExists = 'User already exists',
+  InvalidJSON = 'Invalid JSON in request body',
+  EndpointNotFound = 'Endpoint not found',
 }
 
 export { HttpStatus, HttpMethod, ErrorMessage };

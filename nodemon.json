@@ -4,4 +4,3 @@
   "exec": "tsx",
   "signal": "SIGTERM"
 }
-

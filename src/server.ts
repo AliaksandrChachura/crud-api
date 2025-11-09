@@ -21,7 +21,7 @@ const initServer = async () => {
       try {
         const body = await parseBody(request);
         request.body = body || undefined;
-      } catch (error) {
+      } catch {
         handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidJSON);
         return;
       }
@@ -30,17 +30,21 @@ const initServer = async () => {
     await routes(request, response);
   });
 
-  server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  }).on('error', (error: NodeJS.ErrnoException) => {
-    if (error.code === 'EADDRINUSE') {
-      console.error(`Port ${PORT} is already in use. Please stop the other process or use a different port.`);
-      console.error(`To kill the process on port ${PORT}, run: lsof -ti :${PORT} | xargs kill -9`);
-    } else {
-      console.error('Server error:', error);
-    }
-    process.exit(1);
-  });
+  server
+    .listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    })
+    .on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(
+          `Port ${PORT} is already in use. Please stop the other process or use a different port.`,
+        );
+        console.error(`To kill the process on port ${PORT}, run: lsof -ti :${PORT} | xargs kill -9`);
+      } else {
+        console.error('Server error:', error);
+      }
+      process.exit(1);
+    });
 
   const shutdown = () => {
     console.log('\nShutting down server...');

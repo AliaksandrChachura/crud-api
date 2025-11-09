@@ -15,18 +15,32 @@
   "type": "module",
   "main": "src/server.ts",
   "scripts": {
-    "start:prod": "tsx src/server.ts",
+    "build": "tsc && mkdir -p dist/db && cp src/db/*.json dist/db/",
+    "start:prod": "npm run build && node dist/server.js",
     "start:dev": "nodemon --exec tsx src/server.ts",
+    "start:multi": "MULTI=true tsx src/loadBalancer/cluster.ts",
     "dev:clean": "lsof -ti :4000 | xargs kill -9 2>/dev/null; npm run dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "nodemon": "^3.1.10",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.9.1",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
