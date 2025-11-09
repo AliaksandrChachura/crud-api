@@ -15,15 +15,16 @@
   "type": "module",
   "main": "src/server.ts",
   "scripts": {
-    "build": "tsc && mkdir -p dist/db && cp src/db/*.json dist/db/",
-    "start:prod": "npm run build && node dist/server.js",
+    "start:prod": "tsc && npm run fix:imports && node dist/server.js",
     "start:dev": "nodemon --exec tsx src/server.ts",
     "start:multi": "MULTI=true tsx src/loadBalancer/cluster.ts",
     "dev:clean": "lsof -ti :4000 | xargs kill -9 2>/dev/null; npm run dev",
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "fix:imports": "node scripts/fix-imports.js",
+    "build": "tsc && npm run fix:imports"
   },
   "dependencies": {
     "nodemon": "^3.1.10",
