@@ -1,200 +1,68 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import http from 'node:http';
-import { updateUsersData } from '../db/usersData.js';
-import { mockedUsers } from './setupTests.js';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import request from 'supertest';
+import { mockedUsers } from './setupTests';
+import { ErrorMessage } from '../types';
+import { updateUsersData, initializeUsersData } from '../db/usersData';
 
-const PORT = 4004;
-let server: http.Server;
-
-beforeEach(async () => {
-  updateUsersData([...mockedUsers]);
-  server = http.createServer((req, res) => {
-    if (req.method === 'PUT' && req.url?.startsWith('/api/users/')) {
-      const userId = req.url.split('/')[3];
-      const user = mockedUsers.find((u) => u.id === userId);
-      if (user) {
-        let body = '';
-        req.on('data', (chunk) => {
-          body += chunk.toString();
-        });
-        req.on('end', () => {
-          try {
-            const updateData = JSON.parse(body);
-            const updated = { ...user, ...updateData };
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(updated));
-          } catch {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Invalid JSON' }));
-          }
-        });
-      } else {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'User not found' }));
-      }
-    } else {
-      res.writeHead(404);
-      res.end();
-    }
-  });
-  await new Promise<void>((resolve) => {
-    server.listen(PORT, resolve);
-  });
-});
-
-afterEach(() => {
-  server.close();
-});
+const { server } = await import('../server.js');
 
 describe('PUT /api/users/:id', () => {
-  it('should update an existing user with valid data', (done) => {
-    const userId = mockedUsers[0].id;
-    const updateData = {
-      username: 'NewName',
-      age: 30,
-      hobbies: ['new'],
-    };
-
-    const req = http.request(
-      {
-        method: 'PUT',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-        headers: { 'Content-Type': 'application/json' },
-      },
-      (res) => {
-        expect(res.statusCode).toBe(200);
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk.toString();
-        });
-        res.on('end', () => {
-          const user = JSON.parse(data);
-          expect(user.username).toBe('NewName');
-          expect(user.age).toBe(30);
-          expect(user.hobbies).toEqual(['new']);
-          expect(user.id).toBe(userId);
-          done();
-        });
-      },
-    );
-
-    req.write(JSON.stringify(updateData));
-    req.end();
+  beforeEach(async () => {
+    await initializeUsersData();
+    updateUsersData([...mockedUsers]);
   });
 
-  it('should return 404 for non-existent user id', (done) => {
-    const updateData = {
-      username: 'NewName',
-      age: 30,
-      hobbies: ['new'],
-    };
-
-    const req = http.request(
-      {
-        method: 'PUT',
-        hostname: 'localhost',
-        port: PORT,
-        path: '/api/users/non-existent-id',
-        headers: { 'Content-Type': 'application/json' },
-      },
-      (res) => {
-        expect(res.statusCode).toBe(404);
-        done();
-      },
-    );
-
-    req.write(JSON.stringify(updateData));
-    req.end();
-  });
-
-  it('should return 400 when required fields are missing', (done) => {
-    const userId = mockedUsers[0].id;
-    const updateData = {
-      username: 'NewName',
-      // missing age and hobbies
-    };
-
-    const req = http.request(
-      {
-        method: 'PUT',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-        headers: { 'Content-Type': 'application/json' },
-      },
-      (res) => {
-        expect(res.statusCode).toBe(200); // Server accepts partial update
-        done();
-      },
-    );
-
-    req.write(JSON.stringify(updateData));
-    req.end();
-  });
-
-  it('should update only username field', (done) => {
-    const userId = mockedUsers[1].id;
-    const updateData = {
-      username: 'UpdatedUsername',
-    };
-
-    const req = http.request(
-      {
-        method: 'PUT',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-        headers: { 'Content-Type': 'application/json' },
-      },
-      (res) => {
-        expect(res.statusCode).toBe(200);
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk.toString();
-        });
-        res.on('end', () => {
-          const user = JSON.parse(data);
-          expect(user.username).toBe('UpdatedUsername');
-          expect(user.id).toBe(userId);
-          done();
-        });
-      },
-    );
-
-    req.write(JSON.stringify(updateData));
-    req.end();
-  });
-
-  it('should return 400 for invalid JSON', (done) => {
+  it('should update an existing user with valid data', async () => {
+    const updatedUser = { username: 'Updated Username', age: 40, hobbies: ['dancing'] };
     const userId = mockedUsers[0].id;
 
-    const req = http.request(
-      {
-        method: 'PUT',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-        headers: { 'Content-Type': 'application/json' },
-      },
-      (res) => {
-        expect(res.statusCode).toBe(400);
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk.toString();
-        });
-        res.on('end', () => {
-          done();
-        });
-      },
-    );
+    const response = await request(server).put(`/api/users/${userId}`).send(updatedUser);
 
-    req.on('error', () => {
-      done();
-    });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ id: userId, ...updatedUser });
+  });
 
-    req.write('invalid json');
-    req.end();
+  it('should return 400 when required fields are missing', async () => {
+    const updatedUser = { username: 'Updated Username' };
+    const userId = mockedUsers[0].id;
+
+    const response = await request(server).put(`/api/users/${userId}`).send(updatedUser);
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: ErrorMessage.MissingFields });
+  });
+
+  it('should return 404 for non-existent user id', async () => {
+    const updatedUser = { username: 'Updated Username', age: 40, hobbies: ['dancing'] };
+    const userId = '456b3fa0-c339-4c1f-84df-04027eebdf7d';
+
+    const response = await request(server).put(`/api/users/${userId}`).send(updatedUser);
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: ErrorMessage.UserNotFound });
+  });
+
+  it('should update only username field', async () => {
+    const updatedUser = { username: 'New Username', age: mockedUsers[0].age, hobbies: mockedUsers[0].hobbies };
+    const userId = mockedUsers[0].id;
+
+    const response = await request(server).put(`/api/users/${userId}`).send(updatedUser);
+
+    expect(response.status).toBe(200);
+    expect(response.body.username).toBe('New Username');
+    expect(response.body.age).toBe(mockedUsers[0].age);
+    expect(response.body.hobbies).toEqual(mockedUsers[0].hobbies);
+  });
+
+  it('should return 400 for invalid JSON', async () => {
+    const userId = mockedUsers[0].id;
+
+    const response = await request(server)
+      .put(`/api/users/${userId}`)
+      .send('invalid json')
+      .set('Content-Type', 'application/json');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: ErrorMessage.InvalidJSON });
   });
 });

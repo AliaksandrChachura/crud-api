@@ -1,5 +1,15 @@
 [
   {
+    "id": "60924b85-6f5a-4c0d-8ac1-5a784add23ed",
+    "username": "New Username",
+    "age": 47,
+    "hobbies": [
+      "runnings",
+      "jogging",
+      "maga"
+    ]
+  },
+  {
     "id": "b1f3634c-057d-4582-b0ab-fe8238aefe6b",
     "username": "Ali",
     "age": 47,
