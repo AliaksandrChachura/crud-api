@@ -1,0 +1,28 @@
+import { User } from '../db/types.js';
+
+export const mockedUsers: User[] = [
+  {
+    id: '60924b85-6f5a-4c0d-8ac1-5a784add23ed',
+    username: 'Ali',
+    age: 47,
+    hobbies: ['runnings', 'jogging', 'maga'],
+  },
+  {
+    id: 'b1f3634c-057d-4582-b0ab-fe8238aefe6b',
+    username: 'Ali',
+    age: 47,
+    hobbies: ['running', 'jogging', 'maga'],
+  },
+  {
+    id: '103a9142-2919-4e61-a18d-ac9ca014302f',
+    username: 'AliBaba',
+    age: 45,
+    hobbies: ['runnin', 'jogging', 'maga'],
+  },
+  {
+    id: '68555da3-bb2c-450d-8212-2c2de867194c',
+    username: 'Alex',
+    age: 4325,
+    hobbies: ['runnin', 'maga'],
+  },
+];
