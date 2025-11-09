@@ -5,11 +5,18 @@ interface User {
   hobbies: string[];
 }
 
-interface Message {
-  type: string;
+interface DbChangedMessage {
+  type: 'dbChanged';
   data: User[];
 }
 
+interface UpdatedDBMessage {
+  type: 'updatedDB';
+  data: User[];
+}
+
+type Message = DbChangedMessage | UpdatedDBMessage;
 
 export type UserWithoutId = Omit<User, 'id'>;
-export { User, Message };
+
+export { User, DbChangedMessage, UpdatedDBMessage, Message };

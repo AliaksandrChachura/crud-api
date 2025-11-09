@@ -1,4 +1,8 @@
 import { User } from '../db/types.js';
+import { jest } from '@jest/globals';
+import http from 'node:http';
+import { getUsersData } from '../db/usersData.js';
+import { ErrorMessage, HttpStatus } from '../types.js';
 
 export const mockedUsers: User[] = [
   {
@@ -26,3 +30,46 @@ export const mockedUsers: User[] = [
     hobbies: ['runnin', 'maga'],
   },
 ];
+
+export const mockUuidv4 = jest.fn(() => 'default-mock-id');
+export const mockValidate = jest.fn(() => true);
+
+jest.unstable_mockModule('uuid', () => ({
+  v4: mockUuidv4,
+  validate: mockValidate,
+}));
+
+export const createTestServer = async (): Promise<http.Server> => {
+  const { routes } = await import('../routes/userRoutes.js');
+  const { handleError } = await import('../utils/utils.js');
+
+  const server = http.createServer(async (request, response) => {
+    request.users = getUsersData();
+
+    try {
+      await routes(request, response);
+    } catch (error) {
+      console.error('Route error:', error);
+      if (!response.headersSent) {
+        handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
+      }
+    }
+  });
+
+  await new Promise<void>((resolve) => {
+    server.listen(0, resolve);
+  });
+
+  return server;
+};
+
+export const closeTestServer = async (server: http.Server): Promise<void> => {
+  if (server) {
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        resolve();
+      });
+    });
+  }
+};

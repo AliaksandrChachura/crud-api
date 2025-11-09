@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import request from 'supertest';
-import { mockedUsers } from './setupTests.js';
+import http from 'node:http';
+import { mockedUsers, createTestServer, closeTestServer, mockValidate } from './setupTests.js';
 import { ErrorMessage } from '../types.js';
 import { updateUsersData, initializeUsersData } from '../db/usersData.js';
 
-const { server } = await import('../server.js');
+let server: http.Server;
 
 describe('DELETE /api/users/{userId}', () => {
   beforeEach(async () => {
     await initializeUsersData();
     updateUsersData([...mockedUsers]);
+    mockValidate.mockReturnValue(true);
+    server = await createTestServer();
+  });
+
+  afterEach(async () => {
+    await closeTestServer(server);
   });
 
   it('should delete an existing user and return status code 204', async () => {
@@ -21,7 +28,7 @@ describe('DELETE /api/users/{userId}', () => {
   });
 
   it('should return status code 400 and corresponding message if userId is invalid', async () => {
-    const userId = 'invalidUserId';
+    mockValidate.mockReturnValueOnce(false);
     const response = await request(server).delete('/api/users/invalidUserId');
 
     expect(response.status).toBe(400);

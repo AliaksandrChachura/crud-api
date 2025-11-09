@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import request from 'supertest';
-import { mockedUsers } from './setupTests';
-import { ErrorMessage } from '../types';
-import { updateUsersData, initializeUsersData } from '../db/usersData';
+import http from 'node:http';
+import { mockedUsers, createTestServer, closeTestServer, mockValidate } from './setupTests.js';
+import { ErrorMessage } from '../types.js';
+import { updateUsersData, initializeUsersData } from '../db/usersData.js';
 
-const { server } = await import('../server.js');
+let server: http.Server;
 
 describe('PUT /api/users/:id', () => {
   beforeEach(async () => {
     await initializeUsersData();
     updateUsersData([...mockedUsers]);
+    mockValidate.mockReturnValue(true);
+    server = await createTestServer();
+  });
+
+  afterEach(async () => {
+    await closeTestServer(server);
   });
 
   it('should update an existing user with valid data', async () => {
@@ -43,7 +50,11 @@ describe('PUT /api/users/:id', () => {
   });
 
   it('should update only username field', async () => {
-    const updatedUser = { username: 'New Username', age: mockedUsers[0].age, hobbies: mockedUsers[0].hobbies };
+    const updatedUser = {
+      username: 'New Username',
+      age: mockedUsers[0].age,
+      hobbies: mockedUsers[0].hobbies,
+    };
     const userId = mockedUsers[0].id;
 
     const response = await request(server).put(`/api/users/${userId}`).send(updatedUser);

@@ -1,10 +1,12 @@
-import { User } from './types';
+import { User, Message } from './types';
 import { readUsersFromFile } from '../utils/utils';
-import { Message } from  './types';
-
-let initialUsers: User[] = await import('./usersData.json');
 
 let usersData: User[] = [];
+if (process.env.MULTI === 'true') {
+  usersData = (await import('./usersData.json')).default as User[];
+} else {
+  usersData = (await import('./usersData.json')) as User[];
+}
 
 const initializeUsersData = async (): Promise<void> => {
   usersData = await readUsersFromFile();
@@ -18,10 +20,11 @@ const updateUsersData = (data: User[]): void => {
   usersData = data;
 };
 
-
 const handleMessage = (message: Message) => {
-  if (message && message.type === 'updatedDB') {
-    initialUsers = [...message.data];
+  if (!message) return;
+
+  if (message.type === 'updatedDB') {
+    updateUsersData(message.data);
   }
 };
 

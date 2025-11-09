@@ -5,6 +5,7 @@ import { loadBalancerPort } from './createServer';
 import { availableParallelism } from 'node:os';
 
 const numCPUs = availableParallelism();
+const workersCount = Math.max(1, numCPUs - 1);
 
 let currentServerIndex = 1;
 
@@ -41,5 +42,5 @@ export const forwardRequest = (req: IncomingMessage, res: ServerResponse) => {
     requestToServer.end();
   }
 
-  currentServerIndex = (currentServerIndex % (numCPUs - 1)) + 1;
+  currentServerIndex = (currentServerIndex % workersCount) + 1;
 };

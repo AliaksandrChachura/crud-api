@@ -1,26 +1,28 @@
-import { describe, test, expect, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import request from 'supertest';
-import { ErrorMessage } from '../types';
+import http from 'node:http';
+import { ErrorMessage } from '../types.js';
+import { initializeUsersData, updateUsersData } from '../db/usersData.js';
+import { mockUuidv4, createTestServer, closeTestServer } from './setupTests.js';
 
-const mockUuidv4 = jest.fn(() => 'default-mock-id');
-const mockValidate = jest.fn(() => true);
+let server: http.Server;
 
-jest.unstable_mockModule('uuid', () => ({
-  v4: mockUuidv4,
-  validate: mockValidate,
-}));
+beforeEach(async () => {
+  await initializeUsersData();
+  updateUsersData([]);
+  mockUuidv4.mockClear();
+  server = await createTestServer();
+});
 
-const { server } = await import('../server.js');
+afterEach(async () => {
+  await closeTestServer(server);
+});
 
 describe('POST /api/users', () => {
-  beforeEach(() => {
-    mockUuidv4.mockClear();
-  });
-
   test('POST /api/users should create a new user and return the created record', async () => {
     const newUser = { username: 'John', age: 25, hobbies: ['running', 'swimming'] };
 
-    mockUuidv4.mockReturnValue('mockedId');
+    mockUuidv4.mockImplementation(() => 'mockedId');
     const response = await request(server).post('/api/users').send(newUser);
 
     expect(response.status).toBe(201);

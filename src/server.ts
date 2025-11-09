@@ -1,25 +1,18 @@
 import http from 'node:http';
 import { routes } from './routes/userRoutes';
-import { getUsersData, initializeUsersData } from './db/usersData';
-import { parseBody, handleError } from './utils/utils';
+import { initializeUsersData } from './db/usersData';
+import { handleError } from './utils/utils';
 import { HttpStatus, ErrorMessage } from './types';
 
 const PORT = process.env.PORT || '4000';
 
 const server = http.createServer(async (request, response) => {
-  request.users = getUsersData();
-
-  if (request.method === 'POST' || request.method === 'PUT') {
-    try {
-      const body = await parseBody(request);
-      request.body = body || undefined;
-    } catch {
-      handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidJSON);
-      return;
-    }
+  try {
+    await routes(request, response);
+  } catch (error) {
+    console.error('Route error:', error);
+    handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
   }
-
-  await routes(request, response);
 });
 
 const initServer = async () => {
@@ -32,20 +25,20 @@ const initServer = async () => {
 
   if (process.env.NODE_ENV !== 'test') {
     await server
-        .listen(PORT, async () => {
+      .listen(PORT, async () => {
         console.log(`Server is running on port ${PORT}`);
-        })
-        .on('error', (error: NodeJS.ErrnoException) => {
+      })
+      .on('error', (error: NodeJS.ErrnoException) => {
         if (error.code === 'EADDRINUSE') {
-            console.error(
+          console.error(
             `Port ${PORT} is already in use. Please stop the other process or use a different port.`,
-            );
-            console.error(`To kill the process on port ${PORT}, run: lsof -ti :${PORT} | xargs kill -9`);
+          );
+          console.error(`To kill the process on port ${PORT}, run: lsof -ti :${PORT} | xargs kill -9`);
         } else {
-            console.error('Server error:', error);
+          console.error('Server error:', error);
         }
         process.exit(1);
-        });
+      });
   }
 
   const shutdown = () => {

@@ -1,8 +1,10 @@
 import process from 'node:process';
 import { User } from '../db/types';
 
-const sendUpdatedDB = (updatedDB: User[]) => {
-  process.send?.({ type: 'updatedDB', data: updatedDB });
+const sendDbChangedMessage = (updatedDB: User[]) => {
+  if (typeof process.send === 'function') {
+    process.send?.({ type: 'dbChanged', data: updatedDB });
+  }
 };
 
-export { sendUpdatedDB };
+export { sendDbChangedMessage };

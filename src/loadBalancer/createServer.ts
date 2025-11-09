@@ -1,16 +1,17 @@
 import 'dotenv/config';
-import http from 'node:http';
-import { handleMessage } from '../db/usersData';
+import { createServer as createHttpServer } from 'node:http';
 import { routes } from '../routes/userRoutes';
-
+import { forwardRequest } from './forwardRequest';
 
 const loadBalancerPort = Number(process.env.LOAD_BALANCER_PORT || 4000);
 
 const createServer = (workerId?: number) => {
-  process.on('message', handleMessage);
-
-  const server = http.createServer((request, response) => {
-    routes(request, response);
+  const server = createHttpServer((request, response) => {
+    if (workerId) {
+      routes(request, response);
+    } else {
+      forwardRequest(request, response);
+    }
   });
 
   if (workerId) {

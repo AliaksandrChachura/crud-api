@@ -39,7 +39,8 @@ const routes = async (request: IncomingMessage, response: ServerResponse) => {
         handleError(response, HttpStatus.BAD_REQUEST, ErrorMessage.InvalidRequestBody);
     }
   } catch (error) {
-    console.log(error);
+    console.error('Route error:', error);
+    handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.InternalServerError);
   }
 };
 
