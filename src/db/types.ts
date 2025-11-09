@@ -5,5 +5,11 @@ interface User {
   hobbies: string[];
 }
 
+interface Message {
+  type: string;
+  data: User[];
+}
+
+
 export type UserWithoutId = Omit<User, 'id'>;
-export { User };
+export { User, Message };
