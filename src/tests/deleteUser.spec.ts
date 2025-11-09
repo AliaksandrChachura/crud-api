@@ -1,158 +1,39 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import http from 'node:http';
-import { updateUsersData } from '../db/usersData.js';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import request from 'supertest';
 import { mockedUsers } from './setupTests.js';
+import { ErrorMessage } from '../types.js';
+import { updateUsersData, initializeUsersData } from '../db/usersData.js';
 
-const PORT = 4005;
-let server: http.Server;
+const { server } = await import('../server.js');
 
-beforeEach(async () => {
-  updateUsersData([...mockedUsers]);
-  server = http.createServer((req, res) => {
-    if (req.method === 'DELETE' && req.url?.startsWith('/api/users/')) {
-      const userId = req.url.split('/')[3];
-      const user = mockedUsers.find((u) => u.id === userId);
-      if (user) {
-        res.writeHead(204);
-        res.end();
-      } else {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'User not found' }));
-      }
-    } else {
-      res.writeHead(404);
-      res.end();
-    }
+describe('DELETE /api/users/{userId}', () => {
+  beforeEach(async () => {
+    await initializeUsersData();
+    updateUsersData([...mockedUsers]);
   });
-  await new Promise<void>((resolve) => {
-    server.listen(PORT, resolve);
-  });
-});
 
-afterEach(() => {
-  server.close();
-});
-
-describe('DELETE /api/users/:id', () => {
-  it('should delete a user and return 204 status', (done) => {
+  it('should delete an existing user and return status code 204', async () => {
     const userId = mockedUsers[0].id;
-    const req = http.request(
-      {
-        method: 'DELETE',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-      },
-      (res) => {
-        expect(res.statusCode).toBe(204);
-        res.on('data', () => {});
-        res.on('end', () => {
-          done();
-        });
-      },
-    );
-    req.on('error', (err) => {
-      done(err);
-    });
-    req.end();
+
+    const response = await request(server).delete(`/api/users/${userId}`);
+
+    expect(response.status).toBe(204);
   });
 
-  it('should return 404 for non-existent user id', (done) => {
-    const req = http.request(
-      {
-        method: 'DELETE',
-        hostname: 'localhost',
-        port: PORT,
-        path: '/api/users/non-existent-id',
-      },
-      (res) => {
-        expect(res.statusCode).toBe(404);
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk.toString();
-        });
-        res.on('end', () => {
-          const error = JSON.parse(data);
-          expect(error.error).toBe('User not found');
-          done();
-        });
-      },
-    );
-    req.on('error', (err) => {
-      done(err);
-    });
-    req.end();
+  it('should return status code 400 and corresponding message if userId is invalid', async () => {
+    const userId = 'invalidUserId';
+    const response = await request(server).delete('/api/users/invalidUserId');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: ErrorMessage.InvalidUserId });
   });
 
-  it('should return 204 with no response body', (done) => {
-    const userId = mockedUsers[1].id;
-    const req = http.request(
-      {
-        method: 'DELETE',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-      },
-      (res) => {
-        expect(res.statusCode).toBe(204);
-        let data = '';
-        res.on('data', () => {
-          data += 'should not have data';
-        });
-        res.on('end', () => {
-          expect(data).toBe('');
-          done();
-        });
-      },
-    );
-    req.on('error', (err) => {
-      done(err);
-    });
-    req.end();
-  });
+  it('should return status code 404 and corresponding message if user with userId does not exist', async () => {
+    const userId = '456b3fa0-c339-4c1f-84df-04027eebdf7d';
 
-  it('should delete different users by their ids', (done) => {
-    const userId = mockedUsers[2].id;
-    const req = http.request(
-      {
-        method: 'DELETE',
-        hostname: 'localhost',
-        port: PORT,
-        path: `/api/users/${userId}`,
-      },
-      (res) => {
-        expect(res.statusCode).toBe(204);
-        res.on('data', () => {});
-        res.on('end', () => {
-          done();
-        });
-      },
-    );
-    req.on('error', (err) => {
-      done(err);
-    });
-    req.end();
-  });
+    const response = await request(server).delete(`/api/users/${userId}`);
 
-  it('should return 404 for invalid UUID format', (done) => {
-    const req = http.request(
-      {
-        method: 'DELETE',
-        hostname: 'localhost',
-        port: PORT,
-        path: '/api/users/invalid-uuid-format',
-      },
-      (res) => {
-        expect(res.statusCode).toBe(404);
-        res.on('data', () => {});
-        res.on('end', () => {
-          done();
-        });
-      },
-    );
-    req.on('error', (err) => {
-      done(err);
-    });
-    req.end();
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: ErrorMessage.UserNotFound });
   });
 });
