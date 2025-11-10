@@ -1,0 +1,8 @@
+[
+  {
+    "id": "mockedId",
+    "username": "John",
+    "age": 25,
+    "hobbies": ["running", "swimming"]
+  }
+]

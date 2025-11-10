@@ -1,0 +1,53 @@
+{
+  "name": "crud-api",
+  "version": "1.0.0",
+  "description": "simple crud api",
+  "homepage": "https://github.com/AliaksandrChachura/crud-api#readme",
+  "bugs": {
+    "url": "https://github.com/AliaksandrChachura/crud-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AliaksandrChachura/crud-api.git"
+  },
+  "license": "ISC",
+  "author": "Aliaksandr Chachura",
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "start:prod": "tsc && npm run fix:imports && node dist/server.js",
+    "start:dev": "nodemon --exec tsx src/server.ts",
+    "start:multi": "MULTI=true tsx src/loadBalancer/cluster.ts",
+    "dev:clean": "lsof -ti :4000 | xargs kill -9 2>/dev/null; npm run dev",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "fix:imports": "node scripts/fix-imports.js",
+    "build": "tsc && npm run fix:imports"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "nodemon": "^3.1.10",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
+    "@types/supertest": "^6.0.3",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  }
+}
